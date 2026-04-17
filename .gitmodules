@@ -1,0 +1,7 @@
+[submodule "examples"]
+	path = submodules/examples
+	url = https://github.com/stephensmitchell/alibre-script-examples.git
+
+
+
+
