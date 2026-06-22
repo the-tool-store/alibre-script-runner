@@ -1,7 +1,7 @@
 import sys
 import clr
-sys.path.append(r"C:\Program Files\Alibre Design 28.0.2.28126\Program")
-sys.path.append(r"C:\Program Files\Alibre Design 28.0.2.28126\Program\Addons\AlibreScript")
+sys.path.append(r"C:\Program Files\Alibre Design 29.0.0.29060\Program")
+sys.path.append(r"C:\Program Files\Alibre Design 29.0.0.29060\Program\Addons\AlibreScript")
 clr.AddReference("AlibreX")
 clr.AddReference("AlibreScriptAddOn")
 clr.AddReference("System.Windows.Forms")
@@ -9,9 +9,9 @@ clr.AddReference("System.Drawing")
 
 import AlibreX
 
-sys.path.append(r"C:\PROGRAM FILES\Alibre Design 28.0.2.28126\PROGRAM\ADDONS\ALIBRESCRIPT\PythonLib")
-sys.path.append(r"C:\PROGRAM FILES\Alibre Design 28.0.2.28126\PROGRAM\ADDONS\ALIBRESCRIPT")
-sys.path.append(r"C:\PROGRAM FILES\Alibre Design 28.0.2.28126\PROGRAM\ADDONS\ALIBRESCRIPT\PythonLib\site-packages")
+sys.path.append(r"C:\PROGRAM FILES\Alibre Design 29.0.0.29060\PROGRAM\ADDONS\ALIBRESCRIPT\PythonLib")
+sys.path.append(r"C:\PROGRAM FILES\Alibre Design 29.0.0.29060\PROGRAM\ADDONS\ALIBRESCRIPT")
+sys.path.append(r"C:\PROGRAM FILES\Alibre Design 29.0.0.29060\PROGRAM\ADDONS\ALIBRESCRIPT\PythonLib\site-packages")
 
 import AlibreScript
 from AlibreScript.API import *

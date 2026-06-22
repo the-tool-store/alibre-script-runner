@@ -1,8 +1,8 @@
 import sys
 import clr
 import os
-sys.path.append(r"C:\Program Files\Alibre Design 28.0.2.28126\Program")
-sys.path.append(r"C:\Program Files\Alibre Design 28.0.2.28126\Program\Addons\AlibreScript")
+sys.path.append(r"C:\Program Files\Alibre Design 29.0.0.29060\Program")
+sys.path.append(r"C:\Program Files\Alibre Design 29.0.0.29060\Program\Addons\AlibreScript")
 clr.AddReference("AlibreX")
 clr.AddReference("AlibreScriptAddOn")
 clr.AddReference("System.Windows.Forms")
@@ -20,6 +20,10 @@ from System.Threading import Thread, ThreadStart, ApartmentState
 from System.Drawing import Size
 alibre = Marshal.GetActiveObject("AlibreX.AutomationHook")
 root = alibre.Root
+
+# Instantiate the Windows helper class for dialogs
+Win = Windows()
+
 EXAMPLES_DIR = r"C:\Path\To\Example\Scripts"
 example_files = [
     "Assembly-Constraints.py", "Bolt-Creator.py", "Calculating-Length-of-Curves.py",
@@ -43,11 +47,11 @@ def run_example(script_name):
     if os.path.exists(script_path):
         try:
             exec(open(script_path).read(), globals())
-            Win.InfoDialog(f"Executed: {script_name}", "Execution Complete")
+            Win.InfoDialog("Executed: {0}".format(script_name), "Execution Complete")
         except Exception as e:
-            Win.ErrorDialog(f"Error executing {script_name}: {str(e)}", "Execution Error")
+            Win.ErrorDialog("Error executing {0}: {1}".format(script_name, str(e)), "Execution Error")
     else:
-        Win.ErrorDialog(f"File not found: {script_name}", "File Error")
+        Win.ErrorDialog("File not found: {0}".format(script_name), "File Error")
 def create_menus(form):
     menu_strip = MenuStrip()
     examples_menu = ToolStripMenuItem("Example Scripts")

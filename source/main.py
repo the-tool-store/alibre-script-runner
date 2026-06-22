@@ -4,8 +4,8 @@ import os
 import glob
 
 # Add references to Alibre Design and .NET assemblies
-sys.path.append(r"C:\Program Files\Alibre Design 28.0.2.28126\Program")
-sys.path.append(r"C:\Program Files\Alibre Design 28.0.2.28126\Program\Addons\AlibreScript")
+sys.path.append(r"C:\Program Files\Alibre Design 29.0.0.29060\Program")
+sys.path.append(r"C:\Program Files\Alibre Design 29.0.0.29060\Program\Addons\AlibreScript")
 clr.AddReference("AlibreX")
 clr.AddReference("AlibreScriptAddOn")
 clr.AddReference("System.Windows.Forms")
@@ -22,9 +22,9 @@ from System.Drawing import Size
 from System.Threading import Thread, ThreadStart, ApartmentState
 
 # Add paths for Alibre Script libraries
-sys.path.append(r"C:\PROGRAM FILES\Alibre Design 28.0.2.28126\PROGRAM\ADDONS\ALIBRESCRIPT\PythonLib")
-sys.path.append(r"C:\PROGRAM FILES\Alibre Design 28.0.2.28126\PROGRAM\ADDONS\ALIBRESCRIPT")
-sys.path.append(r"C:\PROGRAM FILES\Alibre Design 28.0.2.28126\PROGRAM\ADDONS\ALIBRESCRIPT\PythonLib\site-packages")
+sys.path.append(r"C:\PROGRAM FILES\Alibre Design 29.0.0.29060\PROGRAM\ADDONS\ALIBRESCRIPT\PythonLib")
+sys.path.append(r"C:\PROGRAM FILES\Alibre Design 29.0.0.29060\PROGRAM\ADDONS\ALIBRESCRIPT")
+sys.path.append(r"C:\PROGRAM FILES\Alibre Design 29.0.0.29060\PROGRAM\ADDONS\ALIBRESCRIPT\PythonLib\site-packages")
 
 # Import Alibre Script API
 import AlibreScript

@@ -646,6 +646,8 @@ def run_getting_user_input():
     """
     # https://help.alibre.com/articles/#!alibre-help-v28/getting-user-input
 
+    import sys
+
     print 'Input width in mm and press Enter'
     Width = float(Read())
     if Width < 0.1:
@@ -1383,6 +1385,7 @@ def run_wave_washer():
     """
     # https://help.alibre.com/articles/#!alibre-help-v28/wave-washer
 
+    import sys
     import math
     from math import sin, cos
 
