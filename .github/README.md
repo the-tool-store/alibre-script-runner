@@ -21,7 +21,6 @@
     - `source/` holds the runner and the sample scripts.
     - `submodules/` holds the shared example scripts.
     - `documentation/` holds reference notes.
-    - `reviews/` holds dated code reviews.
   - Good to know
     - Scripts run against the live model, so save your work before running something new.
   - Use it under the MIT License.

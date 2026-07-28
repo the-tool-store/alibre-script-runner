@@ -3,7 +3,6 @@ import clr
 import os as _os
 import glob as _glob
 
-
 def _alibre_program_dir():
     override = _os.environ.get("ALIBRE_PROGRAM_DIR")
     if override and _os.path.isdir(override):
@@ -17,9 +16,7 @@ def _alibre_program_dir():
             roots.append(candidate)
     return sorted(roots)[-1] if roots else None
 
-
 ALIBRE_PROGRAM_DIR = _alibre_program_dir()
-
 
 def _add_alibre_paths():
     if not ALIBRE_PROGRAM_DIR:
@@ -31,7 +28,6 @@ def _add_alibre_paths():
         if _os.path.isdir(candidate) and candidate not in sys.path:
             sys.path.append(candidate)
 
-
 _add_alibre_paths()
 clr.AddReference("AlibreX")
 clr.AddReference("AlibreScriptAddOn")
@@ -39,7 +35,6 @@ clr.AddReference("System.Windows.Forms")
 clr.AddReference("System.Drawing")
 
 import AlibreX
-
 
 import AlibreScript
 from AlibreScript.API import *
