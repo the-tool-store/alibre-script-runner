@@ -21,7 +21,7 @@ class EquationEditorForm(Form):
         self.FormBorderStyle = FormBorderStyle.Sizable
         self.StartPosition = FormStartPosition.CenterScreen
         self.AutoScroll = True
-        self.TopMost = True # Make the form always stay on top
+        self.TopMost = True
         self.InitializeComponents()
 
     def _create_eval_globals(self):
@@ -105,7 +105,7 @@ class EquationEditorForm(Form):
             param_to_update.Value = evaluated_value
         except Exception as ex:
             MessageBox.Show("Invalid expression: '{}'\n\nError: {}".format(new_text, str(ex)),"Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            return  
+            return
         self.TargetPart.Regenerate()
 def main():
     Units.Current = UnitTypes.Inches

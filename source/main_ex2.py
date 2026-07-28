@@ -1,8 +1,35 @@
 import sys
 import clr
 import os
-sys.path.append(r"C:\Program Files\Alibre Design 29.0.0.29060\Program")
-sys.path.append(r"C:\Program Files\Alibre Design 29.0.0.29060\Program\Addons\AlibreScript")
+import os as _os
+import glob as _glob
+
+def _alibre_program_dir():
+    override = _os.environ.get("ALIBRE_PROGRAM_DIR")
+    if override and _os.path.isdir(override):
+        return override
+    roots = []
+    base = _os.environ.get("ProgramFiles", "C:\\Program Files")
+    for candidate in _glob.glob(_os.path.join(base, "Alibre Design *", "Program")):
+        if "BETA" in candidate.upper():
+            continue
+        if _os.path.isfile(_os.path.join(candidate, "AlibreX.dll")):
+            roots.append(candidate)
+    return sorted(roots)[-1] if roots else None
+
+ALIBRE_PROGRAM_DIR = _alibre_program_dir()
+
+def _add_alibre_paths():
+    if not ALIBRE_PROGRAM_DIR:
+        return
+    script_dir = _os.path.join(ALIBRE_PROGRAM_DIR, "Addons", "AlibreScript")
+    for candidate in (ALIBRE_PROGRAM_DIR, script_dir,
+                      _os.path.join(script_dir, "PythonLib"),
+                      _os.path.join(script_dir, "PythonLib", "site-packages")):
+        if _os.path.isdir(candidate) and candidate not in sys.path:
+            sys.path.append(candidate)
+
+_add_alibre_paths()
 clr.AddReference("AlibreX")
 clr.AddReference("AlibreScriptAddOn")
 clr.AddReference("System.Windows.Forms")
@@ -21,7 +48,6 @@ from System.Drawing import Size
 alibre = Marshal.GetActiveObject("AlibreX.AutomationHook")
 root = alibre.Root
 
-# Instantiate the Windows helper class for dialogs
 Win = Windows()
 
 EXAMPLES_DIR = r"C:\Path\To\Example\Scripts"

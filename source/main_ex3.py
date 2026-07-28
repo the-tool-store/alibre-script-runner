@@ -1,7 +1,34 @@
 import sys
 import clr
-sys.path.append(r"C:\Program Files\Alibre Design 29.0.0.29060\Program")
-sys.path.append(r"C:\Program Files\Alibre Design 29.0.0.29060\Program\Addons\AlibreScript")
+import os as _os
+import glob as _glob
+
+def _alibre_program_dir():
+    override = _os.environ.get("ALIBRE_PROGRAM_DIR")
+    if override and _os.path.isdir(override):
+        return override
+    roots = []
+    base = _os.environ.get("ProgramFiles", "C:\\Program Files")
+    for candidate in _glob.glob(_os.path.join(base, "Alibre Design *", "Program")):
+        if "BETA" in candidate.upper():
+            continue
+        if _os.path.isfile(_os.path.join(candidate, "AlibreX.dll")):
+            roots.append(candidate)
+    return sorted(roots)[-1] if roots else None
+
+ALIBRE_PROGRAM_DIR = _alibre_program_dir()
+
+def _add_alibre_paths():
+    if not ALIBRE_PROGRAM_DIR:
+        return
+    script_dir = _os.path.join(ALIBRE_PROGRAM_DIR, "Addons", "AlibreScript")
+    for candidate in (ALIBRE_PROGRAM_DIR, script_dir,
+                      _os.path.join(script_dir, "PythonLib"),
+                      _os.path.join(script_dir, "PythonLib", "site-packages")):
+        if _os.path.isdir(candidate) and candidate not in sys.path:
+            sys.path.append(candidate)
+
+_add_alibre_paths()
 clr.AddReference("AlibreX")
 clr.AddReference("AlibreScriptAddOn")
 clr.AddReference("System.Windows.Forms")
@@ -9,17 +36,13 @@ clr.AddReference("System.Drawing")
 
 import AlibreX
 
-sys.path.append(r"C:\PROGRAM FILES\Alibre Design 29.0.0.29060\PROGRAM\ADDONS\ALIBRESCRIPT\PythonLib")
-sys.path.append(r"C:\PROGRAM FILES\Alibre Design 29.0.0.29060\PROGRAM\ADDONS\ALIBRESCRIPT")
-sys.path.append(r"C:\PROGRAM FILES\Alibre Design 29.0.0.29060\PROGRAM\ADDONS\ALIBRESCRIPT\PythonLib\site-packages")
-
 import AlibreScript
 from AlibreScript.API import *
 clr.AddReference("System.Runtime.InteropServices")
 from System.Runtime.InteropServices import Marshal
 alibre = Marshal.GetActiveObject("AlibreX.AutomationHook")
 root = alibre.Root
-myPart = Part(root.TopmostSession)  # Grabs the topmost part session
+myPart = Part(root.TopmostSession)
 session = root.Sessions.Item(0)
 objADPartSession = session
 print("Alibre Session File Path:  {}".format(session.FilePath))
@@ -61,17 +84,17 @@ def run_bolt_creator():
     Wraps the script from Bolt-Creator.py inside a function.
     """
     MyPart = Part('My Part')
-    
+
     XYPlane = MyPart.GetPlane('XY-Plane')
     HeadSketch = MyPart.AddSketch('Head', XYPlane)
     HeadSketch.AddCircle(0, 0, 10, False)
     BoltHead = MyPart.AddExtrudeBoss('Bolt Head', HeadSketch, 5, False)
-    
+
     HeadBottomPlane = MyPart.AddPlane('Head Bottom', XYPlane, 5)
     ShoulderSketch = MyPart.AddSketch('Shoulder', HeadBottomPlane)
     ShoulderSketch.AddCircle(0, 0, 5, False)
     BoltShoulder = MyPart.AddExtrudeBoss('Bolt Shoulder', ShoulderSketch, 20, False)
-    
+
     HexSketch = MyPart.AddSketch('Hex', XYPlane)
     HexSketch.AddPolygon(0, 0, 5, 6, False)
     HexRecess = MyPart.AddExtrudeCut('Hex Recess', HexSketch, 3, False)
@@ -81,13 +104,13 @@ def run_calculating_length_of_curves():
     """
     import sympy
     from sympy import Symbol, diff, integrate, sqrt
-    
+
     x = Symbol('x')
-    
+
     formula = 2 * x**2
     x_minimum = 5.0
     x_maximum = 10.0
-    
+
     d = diff(formula, x)
     i = integrate(sympy.sqrt(1 + d**2), (x, x_minimum, x_maximum))
     length = i.evalf()
@@ -96,7 +119,7 @@ def run_cap_screw_iso_4762_bolts():
     """
     Wraps the script from Cap-Screw-ISO-4762-Bolts.py inside a function.
     """
-    
+
     Diameter = 3.0
     Length = 30.0
 
@@ -129,9 +152,9 @@ def run_cap_screw_iso_4762_bolts():
     RimFilletRadius = MetricData[Diameter][4]
 
     Units.Current = UnitTypes.Millimeters
-    
+
     Screw = Part('Cap Screw M%dx%d' % (Diameter, Length))
-    
+
     Profile = Screw.AddSketch('Profile', Screw.GetPlane('XY-Plane'))
     Line = Polyline()
     Line.AddPoint(PolylinePoint(0, 0))
@@ -150,7 +173,7 @@ def run_cap_screw_iso_4762_bolts():
 
     Screw.AddFillet('Cap Joint', Screw.GetEdge('Edge<21>'), (FilletTransitionDiameter - Diameter) / 2.0, False)
     Screw.AddFillet('Hex Hole Bottom',
-                    [Screw.GetEdge('Edge<5>'), Screw.GetEdge('Edge<9>'), 
+                    [Screw.GetEdge('Edge<5>'), Screw.GetEdge('Edge<9>'),
                      Screw.GetEdge('Edge<12>'), Screw.GetEdge('Edge<21>'),
                      Screw.GetEdge('Edge<18>'), Screw.GetEdge('Edge<15>')],
                     (FilletTransitionDiameter - Diameter) / 2.0,
@@ -164,7 +187,7 @@ def run_copy_sketch():
     Sketch1 = MyPart.AddSketch('Sketch1', MyPart.GetPlane('XY-Plane'))
     Sketch1.AddLines([0, 10, 0, 0, 10, 0, 10, 10], False)
     Sketch1.AddArcCenterStartAngle(5, 10, 10, 10, 180, False)
-    
+
     Sketch2 = MyPart.AddSketch('Sketch2', MyPart.GetPlane('YZ-Plane'))
     Sketch2.CopyFrom(Sketch1)
 def run_create_and_modify_global_parameters():
@@ -175,7 +198,7 @@ def run_create_and_modify_global_parameters():
     Params.AddParameter('Width', ParameterTypes.Distance, 4.56)
     Params.Save(r'C:\Users\<username>\Downloads\temp')
     Params.Close()
-    
+
     Params2 = GlobalParameters(r'C:\Users\<username>\Downloads\temp', 'Test')
     Width = Params2.GetParameter('Width')
     print(Width.Value)
@@ -186,15 +209,15 @@ def run_create_reference_planes_axes_and_points():
     """
     MyPart = Part('My Part')
     XYPlane = MyPart.GetPlane('XY-Plane')
-    
+
     TopPlane = MyPart.AddPlane('Top Plane', XYPlane, 100.0)
     BottomPlane = MyPart.AddPlane('Bottom Plane', XYPlane, -100.0)
-    
+
     Ref1 = MyPart.AddPoint('Ref 1', 50.0, 50.0, -100.0)
     Ref2 = MyPart.AddPoint('Ref 2', 50.0, -50.0, -100.0)
     Ref3 = MyPart.AddPoint('Ref 3', -50.0, -50.0, -100.0)
     Ref4 = MyPart.AddPoint('Ref 4', -50.0, 50.0, -100.0)
-    
+
     Axis1 = MyPart.AddAxis('Axis 1', [50.0, 50.0, -100.0], [0.0, 0.0, 100.0])
     Axis2 = MyPart.AddAxis('Axis 2', [50.0, -50.0, -100.0], [0.0, 0.0, 100.0])
     Axis3 = MyPart.AddAxis('Axis 3', [-50.0, -50.0, -100.0], [0.0, 0.0, 100.0])
@@ -205,13 +228,13 @@ def run_creating_3d_spline_and_arc():
     """
     Units.Current = UnitTypes.Inches
     P = Part('My Part')
-    
+
     Path = P.Add3DSketch('Path')
     Points = [0.6, -0.6625, 0.0,
               0.6, -0.6625, -0.2175,
               0.6, -0.8125, -0.6795]
     Path.AddBspline(Points)
-    
+
     Path.AddArcCenterStartEnd(-5.6634, -3.92, -0.6795,
                               0.6, -7.0275, -0.6795,
                               0.6, -0.8125, -0.6795)
@@ -220,28 +243,28 @@ def run_creating_cylinder_between_two_points():
     Wraps the script from Creating-a-Cylinder-Between-Two-Points.py inside a function.
     """
     from math import sqrt
-    
+
     cyl_p1 = [1, 5, 2]
     cyl_p2 = [10, 14, 8]
     diameter = 6
-    
-    length = sqrt((cyl_p2[0] - cyl_p1[0])**2 + 
-                  (cyl_p2[1] - cyl_p1[1])**2 + 
+
+    length = sqrt((cyl_p2[0] - cyl_p1[0])**2 +
+                  (cyl_p2[1] - cyl_p1[1])**2 +
                   (cyl_p2[2] - cyl_p1[2])**2)
-    
+
     normal_vector = [cyl_p2[0] - cyl_p1[0],
                      cyl_p2[1] - cyl_p1[1],
                      cyl_p2[2] - cyl_p1[2]]
-    
+
     P = Part('Cylinder')
     cyl_plane = P.AddPlane('Cyl Start Plane', normal_vector, cyl_p1)
-    
+
     P.AddAxis('Cylinder Axis', cyl_p1, cyl_p2)
-    
+
     S = P.AddSketch('Cylinder End', cyl_plane)
     [cx, cy] = S.GlobaltoPoint(cyl_p1[0], cyl_p1[1], cyl_p1[2])
     S.AddCircle(cx, cy, diameter, False)
-    
+
     P.AddExtrudeBoss('Cylinder', S, length, False)
 def run_creating_and_manipulating_assemblies():
     """
@@ -252,7 +275,7 @@ def run_creating_and_manipulating_assemblies():
     NewPart2 = Asm.DuplicatePart(NewPart1, 5, 10, 15, 30, 40, 50, True)
     NewPart3 = Asm.DuplicatePart(NewPart1, 5, 10, 15, 30, 40, 50, False)
     Asm.AnchorPart(NewPart1)
-    
+
     P = Asm.GetPart(NewPart1.Name)
     print(P.Faces)
 def run_custom_values_and_settings_window():
@@ -265,7 +288,7 @@ def run_custom_values_and_settings_window():
     Options.append(['Scale', WindowsInputTypes.Real, 1.234])
     Options.append(['Enabled', WindowsInputTypes.Boolean, True])
     Options.append(['Count', WindowsInputTypes.Integer, 123456])
-    
+
     Values = Win.OptionsDialog('Test', Options)
     print(Values)
 def run_default_reference_geometry():
@@ -320,17 +343,17 @@ def run_everyone_loves_a_slinky():
     Options.append(['Height Scale', WindowsInputTypes.Real, 1.0])
     Options.append(['Major Helix Width Scale', WindowsInputTypes.Real, 2.0])
     Options.append(['Turn Density', WindowsInputTypes.Integer, 25])
-    
+
     Values = Win.OptionsDialog('Everyone Loves a Slinky', Options)
     if Values is None:
         sys.exit('User cancelled')
-    
+
     AngleIncrement = Values[0]
     LoopScale = Values[1]
     HeightScale = Values[2]
     WidthScale = Values[3]
     TurnDensity = Values[4]
-    
+
     Points = []
     Angle = 0.0
     for Pass in range(0, 437):
@@ -339,7 +362,7 @@ def run_everyone_loves_a_slinky():
         Z = HeightScale * Angle + LoopScale * math.sin(Angle * TurnDensity)
         Points.extend([X, Y, Z])
         Angle += AngleIncrement
-    
+
     Slinky = Part('Slinky')
     Path = Slinky.Add3DSketch('Path')
     Path.AddBspline(Points)
@@ -404,19 +427,19 @@ def run_getting_user_input():
     Width = float(Read())
     if Width < 0.1:
         sys.exit('Width must be at least 0.1 mm')
-    
+
     print('Input height in mm and press Enter')
     Height = float(Read())
     if Height < 0.1:
         sys.exit('Height must be at least 0.1 mm')
-    
+
     print('Input depth in mm and press Enter')
     Depth = float(Read())
     if Depth < 0.1:
         sys.exit('Depth must be at least 0.1 mm')
-    
+
     print('Creating a box measuring %f mm x %f mm x %f mm...' % (Width, Height, Depth))
-    
+
     MyPart = Part('My Part')
     Profile = MyPart.AddSketch('Profile', MyPart.GetPlane('XY-Plane'))
     Profile.AddRectangle(0, 0, Width, Height, False)
@@ -436,17 +459,17 @@ def run_helical_spring():
     Options.append(['Height Scale', WindowsInputTypes.Real, 1.0])
     Options.append(['Major Helix Width Scale', WindowsInputTypes.Real, 2.0])
     Options.append(['Turn Density', WindowsInputTypes.Integer, 25])
-    
+
     Values = Win.OptionsDialog('Everyone Loves a Slinky', Options)
     if Values is None:
         sys.exit('User cancelled')
-    
+
     AngleIncrement = Values[0]
     LoopScale = Values[1]
     HeightScale = Values[2]
     WidthScale = Values[3]
     TurnDensity = Values[4]
-    
+
     Points = []
     Angle = 0.0
     for Pass in range(0, 437):
@@ -455,7 +478,7 @@ def run_helical_spring():
         Z = HeightScale * Angle + LoopScale * math.sin(Angle * TurnDensity)
         Points.extend([X, Y, Z])
         Angle += AngleIncrement
-    
+
     Slinky = Part('Slinky')
     Path = Slinky.Add3DSketch('Path')
     Path.AddBspline(Points)
@@ -470,7 +493,7 @@ def run_import_points_csv_rotate_polyline():
     angle = 45
     rotationpoint = [15.0, 0.0]
     csvfile = r'C:\temp\sample.csv'
-    
+
     def rotate2d(degrees, point, origin):
         x = point[0] - origin[0]
         y = point[1] - origin[1]
@@ -479,7 +502,7 @@ def run_import_points_csv_rotate_polyline():
         newx += origin[0]
         newy += origin[1]
         return newx, newy
-    
+
     points = []
     f = open(csvfile)
     reader = csv.reader(f)
@@ -489,9 +512,9 @@ def run_import_points_csv_rotate_polyline():
         rx, ry = rotate2d(angle, [x, y], rotationpoint)
         points.extend([rx, ry])
     f.close()
-    
+
     print('Found %d points' % (len(points) // 2))
-    
+
     MyPart = Part('My Part')
     PointSketch = MyPart.AddSketch('Point Sketch', MyPart.GetPlane('XY-Plane'))
     PointSketch.AddLines(points, False)
@@ -505,7 +528,7 @@ def run_joint_creator():
     """
     Wraps the script from Joint-Creator.py inside a function.
     """
-    pass  # Placeholder for the full Joint Creator logic if needed.
+    pass
 def run_list_all_parts_in_assembly_and_sub_assemblies():
     """
     Wraps the script from List-All-Parts-in-an-Assembly-and-Sub-Assemblies.py inside a function.
@@ -515,7 +538,7 @@ def run_list_all_parts_in_assembly_and_sub_assemblies():
             print('%s in %s' % (P, Assem))
         for SA in Assem.SubAssemblies:
             ListPartsinAssembly(SA)
-    
+
     Assem = Assembly(r'C:\Users\<username>\Downloads\ASM', 'Main ASM.AD_ASM')
     ListPartsinAssembly(Assem)
     Assem.Close()
@@ -524,17 +547,17 @@ def run_lofting_with_a_guide_curve():
     Wraps the script from Lofting-with-a-Guide-Curve.py inside a function.
     """
     P = Part('foo')
-    
+
     Bottom = P.AddSketch('Bottom', P.GetPlane('XY-Plane'))
     Bottom.AddRectangle(0, 0, 10, 10, False)
-    
+
     TopPlane = P.AddPlane('Top Plane', P.GetPlane('XY-Plane'), 30)
     Top = P.AddSketch('Top', TopPlane)
     Top.AddRectangle(0, 0, 50, 50, False)
-    
+
     Guide = P.Add3DSketch('Guide')
     Guide.AddBspline([10,10,0, 20,20,5, 45,45,15, 50,50,30])
-    
+
     P.AddLoftBoss('Loft Test', [Bottom, Top], [Guide],
                   GuideCurveTypes.Global, True, False, False, False)
 def run_midplane_extrusion():
@@ -554,21 +577,21 @@ def run_mobius_strip():
     Wraps the script from Mobius-Strip.py inside a function.
     """
     Mobius = Part('Mobius')
-    
+
     Diameter = 100.0
     Width = 20.0
     Height = 5.0
     Rotations = 2
     Steps = 30
-    
+
     RotationPerStep = Rotations / float(Steps) * 360.0
     DegreesPerStep = 360.0 / Steps
-    
+
     S0Plane = Mobius.GetPlane('XY-Plane')
     S0 = Mobius.AddSketch('S0', S0Plane)
     S0.AddRectangle(Diameter, -Height / 2, Diameter + Width, Height / 2, False)
     Sketches = [S0]
-    
+
     for Step in range(1, Steps):
         Plane = Mobius.AddPlane('S' + str(Step), S0Plane,
                                 Mobius.GetAxis('Y-Axis'), DegreesPerStep * Step)
@@ -576,7 +599,7 @@ def run_mobius_strip():
         Sketch.CopyFrom(S0, RotationPerStep * Step,
                         Diameter + (Width / 2), 0, 0, 0, 0, 0, 100.0)
         Sketches.append(Sketch)
-    
+
     Mobius.AddLoftBoss('Strip', Sketches, True, True, False, True)
 def run_modify_an_existing_part():
     """
@@ -590,30 +613,30 @@ def run_parameters_with_units():
     Wraps the script from Parameters-with-Units.py inside a function.
     """
     Units.Current = UnitTypes.Inches
-    
+
     MyPart = Part('Foo')
-    
+
     LengthParam = MyPart.AddParameter('Length', ParameterTypes.Distance, 123.4)
     print('Value in script units =', LengthParam.Value)
-    
+
     RotationParam = MyPart.AddParameter('Rotation', ParameterTypes.Angle, 34.2)
     print('Value in degrees = ', RotationParam.Value)
-    
+
     WidthParam = MyPart.AddParameter('Width', ParameterTypes.Distance, ParameterUnits.Centimeters, 7.32)
     print('Value in script units = ', WidthParam.Value)
     print('Value we wrote = ', WidthParam.RawValue)
-    
+
     WidthParam2 = MyPart.AddParameter('Width2', ParameterTypes.Distance, ParameterUnits.Inches, 1.0)
     print('Value in script units = ', WidthParam2.Value)
     print('Value we wrote = ', WidthParam2.RawValue)
-    
+
     Count = MyPart.AddParameter('Count', ParameterTypes.Count, ParameterUnits.Unitless, 45)
     print('Count value = ', Count.Value)
 def run_pocket_hole_creator():
     """
     Wraps the script from Pocket-Hole-Creator.py inside a function.
     """
-    pass  # Placeholder for the full code
+    pass
 def run_polygon_incircle():
     """
     Wraps the script from Polygon-Incircle.py inside a function.
@@ -634,10 +657,10 @@ def run_profile_and_sweep_path():
     """
     MyPart = Part('Test')
     YZPlane = MyPart.GetPlane('YZ-Plane')
-    
+
     PipeRoute = MyPart.Add3DSketch('Pipe Route')
     PipeRoute.AddBspline([0, 0, 0, 5, 0, 0, 10, 5, 5, 15, 10, 5, 15, 15, 15])
-    
+
     StartProfile = MyPart.AddSketch('Start Profile', YZPlane)
     StartProfile.AddCircle(0, 0, 5, False)
 def run_reading_from_a_spreadsheet():
@@ -671,12 +694,12 @@ def run_scaling_a_sketch():
     Wraps the script from Scaling-a-Sketch.py inside a function.
     """
     Units.Current = UnitTypes.Inches
-    
+
     TestRoom = Part('TEST ROOM Scaled', False)
     OriginalSketch = TestRoom.GetSketch('Sketch<1>')
-    
+
     ScaleFactor = 4.125 / 8.25 * 100.0
-    
+
     ScaledSketch = TestRoom.AddSketch('Scaled', TestRoom.GetFace('Face<6>'))
     ScaledSketch.CopyFrom(OriginalSketch, 0, 0, 0, 8.25, 0, 0, 0, ScaleFactor)
 def run_servo_cam():
@@ -690,7 +713,7 @@ def run_servo_cam():
     baseheight  = 2.000
     servoheight = 4.000
     servoinside = 4.200
-    
+
     GripperCam = Part('GripperCam')
     Base = GripperCam.AddSketch('Base', GripperCam.GetPlane('XY-Plane'))
     Base.AddLine([-majorwidth / 2, -height / 2], [majorwidth / 2, -height / 2], False)
@@ -704,16 +727,16 @@ def run_slice_a_part():
     Bounds = P.GetBoundingBox()
     SlicePlane = P.GetPlane('Slice')
     S = P.AddSketch('SliceSketch', SlicePlane)
-    
+
     Proj = []
     for i in range(0, 8):
         Proj.append(S.GlobaltoPoint(Bounds[i][0], Bounds[i][1], Bounds[i][2]))
-    
+
     MaxX = max(pt[0] for pt in Proj)
     MaxY = max(pt[1] for pt in Proj)
     MinX = min(pt[0] for pt in Proj)
     MinY = min(pt[1] for pt in Proj)
-    
+
     S.AddRectangle(MinX, MinY, MaxX, MaxY, False)
     P.AddExtrudeCut('Cut', S, 100, False)
 def run_square_hollow_formed_profiles():
@@ -726,18 +749,18 @@ def run_suppress_unsuppress_remove_features():
     Wraps the script from Supressing-Unsupressing-and-Removing-Features.py inside a function.
     """
     P = Part('Example Part')
-    
+
     CubeSketch = P.AddSketch('CubeProfile', P.GetPlane('XY-Plane'))
     CubeSketch.AddRectangle(0, 0, 10, 10, False)
     CubeFeature = P.AddExtrudeBoss('Cube', CubeSketch, 10, True)
-    
+
     HoleSketch = P.AddSketch('HoleProfile', P.GetPlane('XY-Plane'))
     HoleSketch.AddRectangle(2, 2, 8, 8, False)
     HoleFeature = P.AddExtrudeCut('Hole', HoleSketch, 10, True)
-    
+
     P.SuppressFeature('Cube')
     P.UnsuppressFeature(CubeFeature)
-    
+
     P.RemoveFeature('Hole')
     P.RemoveSketch(HoleSketch)
 def run_tool_cutting():
@@ -800,15 +823,15 @@ def run_triangle():
     Wraps the script from Triangle.py inside a function.
     """
     import math
-    
+
     Theta = 15.0
     Adjacent = 100.0
     Opposite = Adjacent * math.tan(math.radians(Theta))
-    
+
     P1_X, P1_Y = 0, 0
     P2_X, P2_Y = Adjacent, 0
     P3_X, P3_Y = Adjacent, Opposite
-    
+
     P = Part('Foo')
     S = P.AddSketch('Shape', P.GetPlane('XY-Plane'))
     S.AddLine(P1_X, P1_Y, P2_X, P2_Y, False)
@@ -826,13 +849,13 @@ def run_units_script():
     MyPart = Part('My Part')
     XYPlane = MyPart.GetPlane('XY-Plane')
     Sketch = MyPart.AddSketch('Sketch', XYPlane)
-    
+
     Units.Current = UnitTypes.Millimeters
     Sketch.AddCircle(0, 0, 50, False)
-    
+
     Units.Current = UnitTypes.Inches
     Sketch.AddCircle(0, 0, 1.34, False)
-    
+
     Units.Current = UnitTypes.Centimeters
     Sketch.AddCircle(0, 0, 4.2, False)
 def run_useful_dialogs():
@@ -862,7 +885,7 @@ def run_wave_washer():
     Values = Win.OptionsDialog('Wave Washer Generator', Options)
     if Values is None:
         sys.exit()
-    
+
     R = Values[0]
     A = Values[1]
     B = Values[2]
@@ -907,19 +930,19 @@ def run_working_with_configurations():
     Wraps the script from Working-with-Configurations.py inside a function.
     """
     P = Part('Test')
-    
+
     Foo = P.AddConfiguration('Foo')
     Foo.UnlockAll()
     Foo.SetLocks(LockTypes.SuppressNewFeatures)
     Foo.SetLocks(LockTypes.SuppressNewFeatures | LockTypes.LockColorProperties)
     Foo.Activate()
-    
+
     Bar = P.AddConfiguration('Bar', 'Foo')
     Bar.Activate()
-    
+
     Config1 = P.GetConfiguration('Config<1>')
     Config1.LockAll()
-    
+
     ActiveConfig = P.GetActiveConfiguration()
     print('Current active configuration is: %s' % ActiveConfig.Name)
     print('Total number of configurations: %d' % len(P.Configurations))
@@ -929,7 +952,6 @@ def run_working_with_configurations():
 from System.Windows.Forms import Application, Form, MenuStrip, ToolStripMenuItem
 from System.Threading import Thread, ThreadStart, ApartmentState
 from System.Drawing import Size
-
 
 def create_menus(form):
     """
@@ -999,7 +1021,6 @@ def create_menus(form):
     form.MainMenuStrip = menu_strip
     form.Controls.Add(menu_strip)
 
-
 def run_winforms():
     """
     Creates and shows a Form with a MenuStrip in an STA thread.
@@ -1011,7 +1032,6 @@ def run_winforms():
     create_menus(form)
 
     Application.Run(form)
-
 
 def main():
     """
